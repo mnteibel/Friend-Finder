@@ -1,0 +1,140 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Friend Finder</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>	
+</head>
+<body>
+
+	<div class="container">
+		<div class="body">
+			<div class="jumbotron">
+				<h1>Survey Questions</h1>
+			</div>
+
+			<div class ="row">
+				<h3>About You</h3>
+				<hr>
+				<h4>Name (Required)</h4>
+				<input type="text" id="name" class="form-control">
+				<h4>Link To Photo (Required)</h4>
+				<input type="text" id="photo" class="form-control">
+				<h4 id="questionDiv"></h4>
+			</div>
+			<div>
+				<button type="button" id="button" class="btn btn-primary" data-toggle="modal" data-target="exampleModal">
+				Submit</button>
+			</div>
+		</div> 
+	</div>
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Your new best pal!</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<h3 id="body-name"></h3>
+					<div id="body-image"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+
+		// Array of questions to be inserted
+		var questions = [
+		"You enjoy moving heavy boxes (Not do you mind moving heavy boxes but if you like it)",
+		"You always get out of the shower before drying off.",
+		"You prefer to spread room temperature butter on toast.",
+		"You choose rye toast for your classic diner breakfast meal over wheat or white.",
+		"When asked for a song suggestion your choice is always Higher Love by Steve Winwood (If you don't know this song look it up).",
+		"If you were asked who the coolest guy you know is, you would respond Max Teibel 100% of the time.",
+		"You are always looking for new pals!"
+		];
+
+		// Array of answers to be inserted
+		var options = [
+		"1 (Strongly Disagree)",
+		"2 (Disagree)",
+		"3 (Neutral)",
+		"4 (Agree)",
+		"5 (Strongly Agree)"
+		];
+
+
+// Function to insert questions into questionDiv
+function makeQuestions() {
+	for (var i = 0; i < questions.length; i++) {
+		
+		//Question Div
+		var insertedQuestions = $("<div>")
+
+		//Question Number
+		var question = $("<p>").text(questions[i])
+
+		//Answers in dropdown
+		var answer = $("<select>")
+		answer.addClass("answer" + i)
+
+		for (var x = 0; x < options.length; x++) {
+			var option = $("<option>").text(options[x])	
+
+			answer.append(option)
+		}
+
+		insertedQuestions.append(question)
+
+		insertedQuestions.append(answer)
+
+		$("#questionDiv").append(insertedQuestions)
+	}
+}
+
+$("#button").on("click", function(){
+
+	$('#myModal').modal(options)
+
+	if ($("#name").val() === "" || $("#photo").val() === "" ) {
+		
+		alert("Fill out Name and Photo")
+
+	} else {
+		var userInput = { 
+			name: $("#name").val().trim(),
+			picture: $("#photo").val().trim(),
+			answerArr: []
+		}
+
+		for (var a = 0; a < questions.length; a++) {
+			var answer = $(".answer" + a ).val().trim()
+			answerVal = answer[0]
+			userInput["answerArr"].push(answerVal)
+		}
+		console.log(userInput.answerArr)
+		$.post("/api/friends", userInput).done(function(data) {
+
+			var matchName = data.name
+			var matchPicture = data.picture
+			var matchAnswers = data.answerArr
+
+			$("#body-name").text(matchName)
+			$("#body-image").html("<img src=" + matchPicture + " width=50%></img>")
+
+		})
+	}
+
+})
+
+makeQuestions();
+
+</script>
+<script src="https://code.jquery.com/jquery.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+</body>
+</html>
